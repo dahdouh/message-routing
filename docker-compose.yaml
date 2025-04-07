@@ -1,0 +1,38 @@
+services:
+  ibmmq:
+    image: 'docker.io/ibmcom/mq'
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=passw@rd
+      - MQ_ADMIN_USERNAME=admin
+      - MQ_ADMIN_PASSWORD=passw@rd
+    ports:
+      - '1414:1414'
+      - '9443:9443'
+    volumes:
+      - ibmmq:/data/ibmmq
+    container_name: ibmmq
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: ./backend
+    ports:
+      - "8080:80"
+    network_mode: host
+    depends_on:
+      ibmmq:
+        condition: service_started
+        restart: true
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ./frontend
+    ports:
+      - "4200:4200"
+    network_mode: host
+
+volumes:
+  ibmmq:
+    driver: local
+
